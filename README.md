@@ -1,5 +1,5 @@
-# Hair Business CRM v6
+# Hair CRM v7 Recovery
 
-- index.html відкриває мобільний CRM одразу.
-- Товари з бази одразу підтягуються в чек.
-- PWA: Safari → Share → Add to Home Screen.
+Recovery version. Upload all files to GitHub Pages root. Open https://lunarhair.github.io/hair-business-crm/
+
+Перед оновленнями робіть Backup.

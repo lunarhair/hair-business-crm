@@ -1,17 +1,168 @@
-<!DOCTYPE html><html lang='uk'><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Hair CRM"><meta name="theme-color" content="#1f4e78"><link rel="manifest" href="manifest.json"><link rel="stylesheet" href="style.css"><title>Hair CRM v6</title></head><body>
-<header class="appbar"><h1>Hair CRM · Desktop</h1><p>Desktop dashboard</p><div class="top-actions"><button id="undoBtn" class="secondary">↶</button><button id="exportBtn">JSON</button></div></header>
-<nav class="nav"><a href="#top">Головна</a><a href="#new">Запис</a><a href="#catalog">База</a><a href="#clients">Клієнти</a><a href="#stats">Стата</a></nav>
-<main class="layout" id="top"><div id="status" class="status"></div>
-<section class="cards"><div class="card"><span>Оборот</span><strong id="revenue"></strong></div><div class="card"><span>Прибуток</span><strong id="profit"></strong></div><div class="card"><span>Продажі</span><strong id="salesRevenue"></strong></div><div class="card"><span>Сер. чек</span><strong id="avgCheck"></strong></div><div class="card"><span>Клієнтів</span><strong id="clientCount"></strong></div><div class="card"><span>Витрати</span><strong id="expensesTotal"></strong></div><div class="card"><span>Процедури</span><strong id="serviceRevenue"></strong></div><div class="card"><span>Матеріали</span><strong id="visitExpenses"></strong></div></section>
-<section class="panel" id="new"><h2>Швидко додати запис</h2><div class="grid"><input id="name" list="clientsList" placeholder="Імʼя"><datalist id="clientsList"></datalist><input id="date" type="date"><input id="service" list="servicesList" placeholder="Процедура"><datalist id="servicesList"></datalist><input id="servicePrice" type="number" placeholder="Ціна процедури"><input id="sales" type="number" placeholder="Ручні продажі"><input id="expense" type="number" placeholder="Витрати" readonly></div>
-<div class="box items-box"><div class="box-head"><h3>+ товар/послуга з бази</h3><span id="itemsTotal"></span></div><div class="grid"><select id="catalogSelect"></select><input id="catalogQty" type="number" value="1"><button id="addCatalogItem">+ Додати позицію</button></div><div class="table-wrap"><table id="itemsTable"><thead><tr><th>Позиція</th><th>Тип</th><th>К-сть</th><th>Ціна</th><th>Сума</th><th></th></tr></thead><tbody></tbody></table></div></div>
-<div class="box materials-box"><div class="box-head"><h3>Матеріали</h3><span id="materialsTotal"></span></div><div class="grid"><input id="materialName" list="materialsList" placeholder="Матеріал"><datalist id="materialsList"></datalist><input id="materialQty" type="number" value="1"><input id="materialCost" type="number" placeholder="Собівартість"><button id="addMaterial">+ Матеріал</button></div><div class="table-wrap"><table id="materialsTable"><thead><tr><th>Матеріал</th><th>К-сть</th><th>Собівартість</th><th>Сума</th><th></th></tr></thead><tbody></tbody></table></div></div><button id="addVisit" class="full">Додати запис</button></section>
-<section class="panel" id="catalog"><h2>База асортименту</h2><div class="grid"><input id="productName" placeholder="Назва"><select id="productType"><option>Товар</option><option>Послуга</option><option>Матеріал</option></select><input id="productPrice" type="number" placeholder="Ціна продажу"><input id="productCost" type="number" placeholder="Собівартість"><button id="addProduct">+ В базу</button></div><div class="table-wrap"><table id="productsTable"><thead><tr><th>Назва</th><th>Тип</th><th>Ціна</th><th>Собівартість</th><th>Дія</th></tr></thead><tbody></tbody></table></div></section>
-<section class="panel"><h2>Витрата бізнесу</h2><div class="grid"><input id="expenseDate" type="date"><input id="expenseCategory" list="expenseCategoriesList" placeholder="Категорія"><datalist id="expenseCategoriesList"></datalist><input id="expenseAmount" type="number" placeholder="Сума"><button id="addExpense">Додати витрату</button></div></section>
-<section class="charts" id="stats"><div class="panel chart-card"><canvas id="revenueChart"></canvas></div><div class="panel chart-card"><canvas id="profitChart"></canvas></div><div class="panel chart-card"><canvas id="clientsChart"></canvas></div></section>
-<section class="panel"><div class="table-head"><h2>Записи</h2><input id="search" placeholder="Пошук"></div><div class="table-wrap"><table id="visitsTable"><thead><tr><th>Дата</th><th>Імʼя</th><th>Процедура</th><th>Проц.</th><th>Продажі</th><th>Тотал</th><th>Позиції</th><th>Витр.</th><th>Приб.</th><th></th></tr></thead><tbody></tbody></table></div></section>
-<section class="panel" id="clients"><h2>Клієнтська база</h2><div class="table-wrap"><table id="clientsTable"><thead><tr><th>Клієнт</th><th>Візитів</th><th>Останній</th><th>Оборот</th><th>Прибуток</th></tr></thead><tbody></tbody></table></div></section>
-<section class="panel"><h2>Кого запросити повторно</h2><div class="table-wrap"><table id="recallTable"><thead><tr><th>Клієнт</th><th>Останній</th><th>Днів</th><th>Візитів</th><th>Оборот</th></tr></thead><tbody></tbody></table></div></section>
-<section class="panel"><h2>Підсумок по місяцях</h2><div class="table-wrap"><table id="monthlyTable"><thead><tr><th>Місяць</th><th>Проц.</th><th>Продажі</th><th>Оборот</th><th>Мат.</th><th>Витр.</th><th>Приб.</th><th>Зап.</th></tr></thead><tbody></tbody></table></div></section>
-<section class="panel"><h2>Витрати бізнесу</h2><div class="table-wrap"><table id="expensesTable"><thead><tr><th>Дата</th><th>Місяць</th><th>Категорія</th><th>Сума</th><th></th></tr></thead><tbody></tbody></table></div></section></main><script src="data.js"></script><script src="app.js"></script>
-</body></html>
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Hair CRM">
+<meta name="theme-color" content="#1f4e78">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css">
+<title>Hair CRM v7 Recovery</title>
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1>Hair CRM v7</h1>
+    <p>Recovery · клієнти · асортимент · продажі · витрати</p>
+  </div>
+  <div class="top-actions">
+    <button id="undoBtn" class="ghost">↶ Undo</button>
+    <button id="exportBtn">Backup</button>
+  </div>
+</header>
+
+<nav class="bottom-nav">
+  <a href="#dashboard">Дашборд</a>
+  <a href="#entry">Запис</a>
+  <a href="#catalog">База</a>
+  <a href="#clients">Клієнти</a>
+  <a href="#tables">Таблиці</a>
+</nav>
+
+<main id="dashboard" class="wrap">
+  <div id="toast" class="toast"></div>
+
+  <section class="cards">
+    <div class="card"><span>Оборот</span><b id="kRevenue">0</b></div>
+    <div class="card"><span>Прибуток</span><b id="kProfit">0</b></div>
+    <div class="card"><span>Процедури</span><b id="kServices">0</b></div>
+    <div class="card"><span>Продажі</span><b id="kSales">0</b></div>
+    <div class="card"><span>Витрати</span><b id="kExpenses">0</b></div>
+    <div class="card"><span>Клієнтів</span><b id="kClients">0</b></div>
+    <div class="card"><span>Сер. чек</span><b id="kAvg">0</b></div>
+    <div class="card"><span>Записів</span><b id="kVisits">0</b></div>
+  </section>
+
+  <section class="panel charts">
+    <canvas id="revenueChart"></canvas>
+    <canvas id="profitChart"></canvas>
+  </section>
+
+  <section id="entry" class="panel">
+    <h2>Новий запис</h2>
+    <div class="form-grid">
+      <input id="visitName" list="clientsList" placeholder="Імʼя клієнта">
+      <datalist id="clientsList"></datalist>
+      <input id="visitDate" type="date">
+      <input id="visitService" list="servicesList" placeholder="Процедура">
+      <datalist id="servicesList"></datalist>
+      <input id="visitServicePrice" type="number" placeholder="Ціна процедури">
+      <input id="visitManualSales" type="number" placeholder="Ручні продажі">
+    </div>
+
+    <div class="subbox purple">
+      <div class="subhead"><h3>Додати товар / послугу з бази</h3><b id="draftItemsTotal">0 CZK</b></div>
+      <div class="form-grid three">
+        <select id="catalogSelect"></select>
+        <input id="catalogQty" type="number" value="1" min="1">
+        <button id="addCatalogItem">+ Додати позицію</button>
+      </div>
+      <div class="table-wrap mini">
+        <table id="draftItemsTable"><thead><tr><th>Позиція</th><th>Тип</th><th>К-сть</th><th>Ціна</th><th>Сума</th><th></th></tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+
+    <div class="subbox yellow">
+      <div class="subhead"><h3>Матеріали по процедурі</h3><b id="draftMaterialsTotal">0 CZK</b></div>
+      <div class="form-grid four">
+        <input id="matName" list="materialsList" placeholder="Матеріал">
+        <datalist id="materialsList"></datalist>
+        <input id="matQty" type="number" value="1" min="1">
+        <input id="matCost" type="number" placeholder="Собівартість">
+        <button id="addMaterial">+ Матеріал</button>
+      </div>
+      <div class="table-wrap mini">
+        <table id="draftMaterialsTable"><thead><tr><th>Матеріал</th><th>К-сть</th><th>Собівартість</th><th>Сума</th><th></th></tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+
+    <button id="addVisit" class="primary-wide">Додати запис</button>
+  </section>
+
+  <section id="catalog" class="panel">
+    <h2>База асортименту</h2>
+    <div class="form-grid five">
+      <input id="productName" placeholder="Назва">
+      <select id="productType">
+        <option value="Товар">Товар</option>
+        <option value="Послуга">Послуга</option>
+        <option value="Матеріал">Матеріал</option>
+      </select>
+      <input id="productPrice" type="number" placeholder="Ціна продажу">
+      <input id="productCost" type="number" placeholder="Собівартість">
+      <button id="addProduct">+ В базу</button>
+    </div>
+    <div class="table-wrap">
+      <table id="productsTable"><thead><tr><th>Назва</th><th>Тип</th><th>Ціна</th><th>Собівартість</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Витрата бізнесу</h2>
+    <div class="form-grid four">
+      <input id="expenseDate" type="date">
+      <input id="expenseCategory" list="expenseCats" placeholder="Категорія">
+      <datalist id="expenseCats"></datalist>
+      <input id="expenseAmount" type="number" placeholder="Сума">
+      <button id="addExpense">Додати витрату</button>
+    </div>
+  </section>
+
+  <section id="clients" class="panel two">
+    <div>
+      <h2>Клієнтська база</h2>
+      <div class="table-wrap"><table id="clientsTable"><thead><tr><th>Клієнт</th><th>Візитів</th><th>Останній</th><th>Оборот</th><th>Прибуток</th></tr></thead><tbody></tbody></table></div>
+    </div>
+    <div>
+      <h2>Кого запросити повторно</h2>
+      <div class="table-wrap"><table id="recallTable"><thead><tr><th>Клієнт</th><th>Останній</th><th>Днів</th><th>Візитів</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </section>
+
+  <section id="tables" class="panel">
+    <div class="section-head">
+      <h2>Записи</h2>
+      <input id="search" placeholder="Пошук">
+    </div>
+    <div class="table-wrap"><table id="visitsTable"><thead><tr><th>Дата</th><th>Імʼя</th><th>Процедура</th><th>Процедура</th><th>Продажі</th><th>Тотал</th><th>Позиції</th><th>Витрати запису</th><th>Прибуток</th><th></th></tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <section class="panel two">
+    <div>
+      <h2>Підсумок по місяцях</h2>
+      <div class="table-wrap"><table id="monthlyTable"><thead><tr><th>Місяць</th><th>Процедури</th><th>Продажі</th><th>Оборот</th><th>Витрати</th><th>Прибуток</th><th>Записів</th></tr></thead><tbody></tbody></table></div>
+    </div>
+    <div>
+      <h2>Витрати бізнесу</h2>
+      <div class="table-wrap"><table id="expensesTable"><thead><tr><th>Дата</th><th>Категорія</th><th>Сума</th><th></th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </section>
+
+  <section class="panel backup">
+    <h2>Backup / Restore</h2>
+    <p>Перед оновленням версій натискайте Backup. Якщо щось зламається — можна повернути дані через Restore.</p>
+    <input id="importFile" type="file" accept="application/json">
+    <button id="importBtn" class="ghost">Restore з JSON</button>
+  </section>
+</main>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
+}
+</script>
+</body>
+</html>

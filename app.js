@@ -1,41 +1,112 @@
+const STORE_V='haircrm_visits', STORE_E='haircrm_expenses', STORE_P='haircrm_products';
+const czk=n=>`${Math.round(Number(n||0)).toLocaleString('cs-CZ')} CZK`;
+const monthOf=d=>(d||'').slice(0,7);
+const today=()=>new Date().toISOString().slice(0,10);
+let state={visits:[],expenses:[],products:[]}, draftItems=[], draftMaterials=[], history=[];
 
-const czk=n=>`${Number(n||0).toLocaleString('cs-CZ')} CZK`;
-const monthFromDate=d=>(d||'').slice(0,7);
-const daysBetween=(a,b)=>Math.floor((new Date(b)-new Date(a))/(1000*60*60*24));
-let visits=JSON.parse(localStorage.getItem('haircrm_visits')||'null')||initialVisits;
-let expenses=JSON.parse(localStorage.getItem('haircrm_expenses')||'null')||initialExpenses;
-let products=JSON.parse(localStorage.getItem('haircrm_products')||'null')||initialProducts;
-let draftItems=[],draftMaterials=[],history=[];
-function snap(){history.push({v:JSON.stringify(visits),e:JSON.stringify(expenses),p:JSON.stringify(products)});if(history.length>50)history.shift()}
-function save(){localStorage.setItem('haircrm_visits',JSON.stringify(visits));localStorage.setItem('haircrm_expenses',JSON.stringify(expenses));localStorage.setItem('haircrm_products',JSON.stringify(products))}
-function status(m){let s=document.getElementById('status');if(!s)return;s.textContent=m;s.style.display='block';setTimeout(()=>s.style.display='none',2200)}
-function itemSales(a){return(a||[]).reduce((s,i)=>s+Number(i.qty||0)*Number(i.price||0),0)}function itemCost(a){return(a||[]).reduce((s,i)=>s+Number(i.qty||0)*Number(i.cost||0),0)}function matCost(a){return(a||[]).reduce((s,i)=>s+Number(i.qty||0)*Number(i.cost||0),0)}
-function calc(v){v.month=v.month||monthFromDate(v.date);v.service_price=Number(v.service_price||0);v.sales_manual=Number(v.sales_manual??v.sales??0);v.items=v.items||[];v.materials=v.materials||[];v.sales=v.sales_manual+itemSales(v.items);v.visit_expenses=itemCost(v.items)+matCost(v.materials);v.total=v.service_price+v.sales;v.profit=v.total-v.visit_expenses;return v}
-function prep(){visits=visits.map(calc).sort((a,b)=>a.date.localeCompare(b.date))}
-function opts(id,a){let e=document.getElementById(id);if(e)e.innerHTML=a.map(x=>`<option value="${x}">`).join('')}
-function updateLists(){opts('clientsList',[...new Set(visits.map(v=>v.name).filter(Boolean))].sort());opts('servicesList',[...new Set(visits.map(v=>v.service).filter(Boolean).concat(products.filter(p=>p.type==='Послуга').map(p=>p.name)))].sort());opts('materialsList',[...new Set(visits.flatMap(v=>(v.materials||[]).map(m=>m.name)).concat(products.filter(p=>p.type==='Матеріал').map(p=>p.name)).filter(Boolean))].sort());opts('expenseCategoriesList',[...new Set(expenses.map(e=>e.category).filter(Boolean).concat(['Оренда','SMM','Закупка Davines','Закупка Viart']))].sort());let cs=document.getElementById('catalogSelect');if(cs){cs.innerHTML='<option value="">Оберіть позицію</option>'+products.map((p,i)=>`<option value="${i}">${p.name} · ${p.type} · ${czk(p.price)}</option>`).join('')}}
-function renderProducts(){let tb=document.querySelector('#productsTable tbody');if(!tb)return;tb.innerHTML=products.map((p,i)=>`<tr><td>${p.name}</td><td>${p.type}</td><td>${czk(p.price)}</td><td>${czk(p.cost)}</td><td><button class="danger" onclick="delProduct(${i})">×</button></td></tr>`).join('')}
-function addProduct(){let name=document.getElementById('productName').value.trim(),type=document.getElementById('productType').value,price=Number(document.getElementById('productPrice').value||0),cost=Number(document.getElementById('productCost').value||0);if(!name||!price){alert('Вкажіть назву і ціну');return}snap();products.push({name,type,price,cost});save();['productName','productPrice','productCost'].forEach(id=>document.getElementById(id).value='');renderAll();status('Позицію додано. Вона вже доступна у списку.')}
-function delProduct(i){if(!confirm('Видалити позицію?'))return;snap();products.splice(i,1);save();renderAll()}
-function addDraftItem(){let idx=document.getElementById('catalogSelect').value;if(idx===''){alert('Оберіть позицію з бази');return}let p=products[Number(idx)],q=Number(document.getElementById('catalogQty').value||1);draftItems.push({name:p.name,type:p.type,qty:q,price:Number(p.price||0),cost:Number(p.cost||0)});renderDrafts();status('Позицію додано до чеку')}
-function removeDraftItem(i){draftItems.splice(i,1);renderDrafts()}
-function addMaterial(){let name=document.getElementById('materialName').value.trim(),q=Number(document.getElementById('materialQty').value||1),cost=Number(document.getElementById('materialCost').value||0);if(!name||!cost){alert('Вкажіть матеріал і собівартість');return}draftMaterials.push({name,qty:q,cost});document.getElementById('materialName').value='';document.getElementById('materialCost').value='';renderDrafts()}
-function removeDraftMaterial(i){draftMaterials.splice(i,1);renderDrafts()}
-function renderDrafts(){let it=document.querySelector('#itemsTable tbody');if(it)it.innerHTML=draftItems.map((x,i)=>`<tr><td>${x.name}</td><td>${x.type}</td><td>${x.qty}</td><td>${czk(x.price)}</td><td>${czk(x.qty*x.price)}</td><td><button class="danger" onclick="removeDraftItem(${i})">×</button></td></tr>`).join('');let mt=document.querySelector('#materialsTable tbody');if(mt)mt.innerHTML=draftMaterials.map((x,i)=>`<tr><td>${x.name}</td><td>${x.qty}</td><td>${czk(x.cost)}</td><td>${czk(x.qty*x.cost)}</td><td><button class="danger" onclick="removeDraftMaterial(${i})">×</button></td></tr>`).join('');txt('itemsTotal',czk(itemSales(draftItems)));txt('materialsTotal',czk(matCost(draftMaterials)));let ex=document.getElementById('expense');if(ex)ex.value=itemCost(draftItems)+matCost(draftMaterials)}
-function addVisit(){let date=document.getElementById('date').value;if(!date){alert('Вкажіть дату');return}snap();visits.push(calc({date,month:monthFromDate(date),name:document.getElementById('name').value||'Без імені',service:document.getElementById('service').value||'Без опису',service_price:Number(document.getElementById('servicePrice').value||0),sales_manual:Number(document.getElementById('sales').value||0),items:[...draftItems],materials:[...draftMaterials]}));draftItems=[];draftMaterials=[];save();renderAll();status('Запис додано')}
-function addExpense(){let date=document.getElementById('expenseDate').value;if(!date){alert('Вкажіть дату витрати');return}snap();expenses.push({date,month:monthFromDate(date),category:document.getElementById('expenseCategory').value||'Витрата',amount:Number(document.getElementById('expenseAmount').value||0)});save();renderAll()}
-function delVisit(i){if(!confirm('Видалити запис?'))return;snap();visits.splice(i,1);save();renderAll()}function delExpense(i){if(!confirm('Видалити витрату?'))return;snap();expenses.splice(i,1);save();renderAll()}function undo(){let l=history.pop();if(!l){alert('Немає дії для відміни');return}visits=JSON.parse(l.v);expenses=JSON.parse(l.e);products=JSON.parse(l.p);save();renderAll()}
-function monthly(){prep();let m={};for(let v of visits){m[v.month]||={service:0,sales:0,revenue:0,visitExp:0,businessExp:0,count:0};Object.assign(m[v.month],{service:m[v.month].service+v.service_price,sales:m[v.month].sales+v.sales,revenue:m[v.month].revenue+v.total,visitExp:m[v.month].visitExp+v.visit_expenses,count:m[v.month].count+1})}for(let e of expenses){let mo=e.month||monthFromDate(e.date);m[mo]||={service:0,sales:0,revenue:0,visitExp:0,businessExp:0,count:0};m[mo].businessExp+=Number(e.amount||0)}Object.keys(m).forEach(k=>m[k].profit=m[k].revenue-m[k].visitExp-m[k].businessExp);return m}
-function clients(){let c={};for(let v of visits){if(v.name==='Окремі продажі')continue;c[v.name]||={name:v.name,visits:0,revenue:0,profit:0,last:v.date};c[v.name].visits++;c[v.name].revenue+=v.total;c[v.name].profit+=v.profit;c[v.name].last=c[v.name].last>v.date?c[v.name].last:v.date}return Object.values(c).sort((a,b)=>b.revenue-a.revenue)}
-function txt(id,v){let e=document.getElementById(id);if(e)e.textContent=v}
-function renderCards(){let t=Object.values(monthly()).reduce((a,x)=>({service:a.service+x.service,sales:a.sales+x.sales,revenue:a.revenue+x.revenue,visitExp:a.visitExp+x.visitExp,businessExp:a.businessExp+x.businessExp,profit:a.profit+x.profit,count:a.count+x.count}),{service:0,sales:0,revenue:0,visitExp:0,businessExp:0,profit:0,count:0});txt('revenue',czk(t.revenue));txt('serviceRevenue',czk(t.service));txt('salesRevenue',czk(t.sales));txt('visitExpenses',czk(t.visitExp));txt('expensesTotal',czk(t.businessExp));txt('profit',czk(t.profit));txt('clientCount',clients().length);txt('avgCheck',czk(t.count?t.revenue/t.count:0))}
-function renderTables(){prep();let q=(document.getElementById('search')?.value||'').toLowerCase(),vt=document.querySelector('#visitsTable tbody');if(vt)vt.innerHTML=visits.map((v,i)=>({v,i})).filter(({v})=>[v.name,v.service,v.date].join(' ').toLowerCase().includes(q)).map(({v,i})=>`<tr><td>${v.date}</td><td>${v.name}</td><td>${v.service}</td><td>${czk(v.service_price)}</td><td>${czk(v.sales)}</td><td>${czk(v.total)}</td><td class="note">${(v.items||[]).map(x=>x.name+' '+x.qty+'×'+czk(x.price)).join('<br>')}</td><td>${czk(v.visit_expenses)}</td><td class="${v.profit<0?'negative':'positive'}">${czk(v.profit)}</td><td><button class="danger" onclick="delVisit(${i})">×</button></td></tr>`).join('');
-let ct=document.querySelector('#clientsTable tbody');if(ct)ct.innerHTML=clients().map(c=>`<tr><td>${c.name}</td><td>${c.visits}</td><td>${c.last}</td><td>${czk(c.revenue)}</td><td class="${c.profit<0?'negative':'positive'}">${czk(c.profit)}</td></tr>`).join('');
-let rt=document.querySelector('#recallTable tbody');if(rt){let today=new Date().toISOString().slice(0,10);rt.innerHTML=clients().map(c=>({...c,days:daysBetween(c.last,today)})).filter(c=>c.days>=45).sort((a,b)=>b.days-a.days).map(c=>`<tr><td>${c.name}</td><td>${c.last}</td><td>${c.days}</td><td>${c.visits}</td><td>${czk(c.revenue)}</td></tr>`).join('')}
-let mt=document.querySelector('#monthlyTable tbody');if(mt){let m=monthly();mt.innerHTML=Object.keys(m).sort().map(k=>{let x=m[k];return`<tr><td>${k}</td><td>${czk(x.service)}</td><td>${czk(x.sales)}</td><td>${czk(x.revenue)}</td><td>${czk(x.visitExp)}</td><td>${czk(x.businessExp)}</td><td class="${x.profit<0?'negative':'positive'}">${czk(x.profit)}</td><td>${x.count}</td></tr>`}).join('')}
-let et=document.querySelector('#expensesTable tbody');if(et)et.innerHTML=expenses.map((e,i)=>`<tr><td>${e.date}</td><td>${e.month}</td><td>${e.category}</td><td>${czk(e.amount)}</td><td><button class="danger" onclick="delExpense(${i})">×</button></td></tr>`).join('')}
-function draw(id,labels,vals,title){let c=document.getElementById(id);if(!c)return,0;let ctx=c.getContext('2d'),dpr=window.devicePixelRatio||1;c.width=c.clientWidth*dpr;c.height=c.clientHeight*dpr;ctx.scale(dpr,dpr);let W=c.clientWidth,H=c.clientHeight,p=32,max=Math.max(...vals,1);ctx.clearRect(0,0,W,H);ctx.fillStyle='#152033';ctx.font='12px Arial';ctx.fillText(title,10,18);vals.forEach((v,i)=>{let slot=(W-p*2)/vals.length,bw=slot*.55,x=p+i*slot+8,bh=(H-p*2)*(v/max),y=H-p-bh;ctx.fillStyle='#1f4e78';ctx.fillRect(x,y,bw,bh);ctx.fillStyle='#6b7280';ctx.fillText(labels[i].slice(5),x,H-8)})}
-function renderCharts(){let m=monthly(),labs=Object.keys(m).sort();draw('revenueChart',labs,labs.map(k=>m[k].revenue),'Оборот');draw('profitChart',labs,labs.map(k=>Math.max(m[k].profit,0)),'Прибуток');draw('clientsChart',labs,labs.map(k=>m[k].count),'Записи')}
-function renderAll(){prep();updateLists();renderProducts();renderDrafts();renderCards();renderTables();renderCharts()}
-function exportData(){let blob=new Blob([JSON.stringify({visits,expenses,products},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='hair-crm-export.json';a.click();URL.revokeObjectURL(url)}
-document.addEventListener('DOMContentLoaded',()=>{document.getElementById('addProduct')?.addEventListener('click',addProduct);document.getElementById('addCatalogItem')?.addEventListener('click',addDraftItem);document.getElementById('addMaterial')?.addEventListener('click',addMaterial);document.getElementById('addVisit')?.addEventListener('click',addVisit);document.getElementById('addExpense')?.addEventListener('click',addExpense);document.getElementById('undoBtn')?.addEventListener('click',undo);document.getElementById('exportBtn')?.addEventListener('click',exportData);document.getElementById('search')?.addEventListener('input',renderTables);document.getElementById('service')?.addEventListener('change',()=>{let val=document.getElementById('service').value.toLowerCase(),p=products.find(x=>x.type==='Послуга'&&x.name.toLowerCase()===val);if(p)document.getElementById('servicePrice').value=p.price});renderAll()});
+function load(){
+  const oldV=localStorage.getItem(STORE_V), oldE=localStorage.getItem(STORE_E), oldP=localStorage.getItem(STORE_P);
+  state.visits=oldV?JSON.parse(oldV):(window.INITIAL_DATA?.visits||[]);
+  state.expenses=oldE?JSON.parse(oldE):(window.INITIAL_DATA?.expenses||[]);
+  state.products=oldP?JSON.parse(oldP):(window.INITIAL_DATA?.products||[]);
+  normalizeAll();
+}
+function save(){localStorage.setItem(STORE_V,JSON.stringify(state.visits));localStorage.setItem(STORE_E,JSON.stringify(state.expenses));localStorage.setItem(STORE_P,JSON.stringify(state.products));}
+function snapshot(){history.push(JSON.stringify(state));if(history.length>50)history.shift();}
+function undo(){if(!history.length)return toast('Немає дії для відміни');state=JSON.parse(history.pop());save();render();}
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',2500);}
+function itemSales(items){return(items||[]).reduce((s,i)=>s+num(i.qty)*num(i.price),0)}
+function itemCost(items){return(items||[]).reduce((s,i)=>s+num(i.qty)*num(i.cost),0)}
+function matCost(mats){return(mats||[]).reduce((s,m)=>s+num(m.qty)*num(m.cost),0)}
+function num(x){return Number(x||0)}
+function normalizeVisit(v){
+  v.date=v.date||today(); v.month=monthOf(v.date); v.name=v.name||'Без імені'; v.service=v.service||'Без опису';
+  v.service_price=num(v.service_price); v.sales_manual=num(v.sales_manual ?? v.sales ?? 0); v.items=v.items||[]; v.materials=v.materials||[];
+  v.sales=v.sales_manual+itemSales(v.items); v.visit_expenses=itemCost(v.items)+matCost(v.materials);
+  v.total=v.service_price+v.sales; v.profit=v.total-v.visit_expenses; return v;
+}
+function normalizeAll(){state.visits=state.visits.map(normalizeVisit).sort((a,b)=>a.date.localeCompare(b.date));state.expenses=state.expenses.map(e=>({...e,date:e.date||today(),month:monthOf(e.date||today()),amount:num(e.amount)}));state.products=state.products.map(p=>({name:p.name||'Без назви',type:p.type||'Товар',price:num(p.price),cost:num(p.cost)}));}
+
+function unique(arr){return [...new Set(arr.filter(Boolean))].sort()}
+function setDatalist(id, arr){const el=document.getElementById(id); if(el) el.innerHTML=arr.map(x=>`<option value="${escapeHtml(x)}">`).join('');}
+function renderSelects(){
+ setDatalist('clientsList',unique(state.visits.map(v=>v.name)));
+ setDatalist('servicesList',unique(state.visits.map(v=>v.service).concat(state.products.filter(p=>p.type==='Послуга').map(p=>p.name))));
+ setDatalist('materialsList',unique(state.visits.flatMap(v=>v.materials.map(m=>m.name)).concat(state.products.filter(p=>p.type==='Матеріал').map(p=>p.name))));
+ setDatalist('expenseCats',unique(state.expenses.map(e=>e.category).concat(['Оренда','SMM','Закупка Davines','Закупка Viart'])));
+ const sel=document.getElementById('catalogSelect');
+ sel.innerHTML='<option value="">Оберіть позицію</option>'+state.products.map((p,i)=>`<option value="${i}">${escapeHtml(p.name)} · ${escapeHtml(p.type)} · ${czk(p.price)}</option>`).join('');
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+
+function addProduct(){
+ const name=document.getElementById('productName').value.trim(), type=document.getElementById('productType').value, price=num(document.getElementById('productPrice').value), cost=num(document.getElementById('productCost').value);
+ if(!name||!price)return alert('Вкажіть назву і ціну');
+ snapshot(); state.products.push({name,type,price,cost}); save(); ['productName','productPrice','productCost'].forEach(id=>document.getElementById(id).value=''); render(); toast('Позицію додано в базу');
+}
+function deleteProduct(i){if(!confirm('Видалити позицію з бази?'))return;snapshot();state.products.splice(i,1);save();render();}
+function addDraftItem(){
+ const idx=document.getElementById('catalogSelect').value; if(idx==='')return alert('Оберіть позицію з бази');
+ const p=state.products[num(idx)], qty=num(document.getElementById('catalogQty').value)||1;
+ draftItems.push({name:p.name,type:p.type,qty,price:p.price,cost:p.cost}); renderDrafts(); toast('Позицію додано до чеку');
+}
+function removeDraftItem(i){draftItems.splice(i,1);renderDrafts();}
+function addMaterial(){
+ const name=document.getElementById('matName').value.trim(), qty=num(document.getElementById('matQty').value)||1, cost=num(document.getElementById('matCost').value);
+ if(!name||!cost)return alert('Вкажіть матеріал і собівартість');
+ draftMaterials.push({name,qty,cost}); document.getElementById('matName').value='';document.getElementById('matCost').value='';renderDrafts();
+}
+function removeDraftMaterial(i){draftMaterials.splice(i,1);renderDrafts();}
+function renderDrafts(){
+ document.querySelector('#draftItemsTable tbody').innerHTML=draftItems.map((x,i)=>`<tr><td>${escapeHtml(x.name)}</td><td>${escapeHtml(x.type)}</td><td>${x.qty}</td><td>${czk(x.price)}</td><td>${czk(x.qty*x.price)}</td><td><button class="danger" onclick="removeDraftItem(${i})">×</button></td></tr>`).join('');
+ document.querySelector('#draftMaterialsTable tbody').innerHTML=draftMaterials.map((x,i)=>`<tr><td>${escapeHtml(x.name)}</td><td>${x.qty}</td><td>${czk(x.cost)}</td><td>${czk(x.qty*x.cost)}</td><td><button class="danger" onclick="removeDraftMaterial(${i})">×</button></td></tr>`).join('');
+ document.getElementById('draftItemsTotal').textContent=czk(itemSales(draftItems));
+ document.getElementById('draftMaterialsTotal').textContent=czk(matCost(draftMaterials));
+}
+function addVisit(){
+ const date=document.getElementById('visitDate').value||today();
+ snapshot();
+ state.visits.push(normalizeVisit({date,name:document.getElementById('visitName').value||'Без імені',service:document.getElementById('visitService').value||'Без опису',service_price:num(document.getElementById('visitServicePrice').value),sales_manual:num(document.getElementById('visitManualSales').value),items:[...draftItems],materials:[...draftMaterials]}));
+ draftItems=[]; draftMaterials=[]; save(); render(); toast('Запис додано');
+}
+function deleteVisit(i){if(!confirm('Видалити запис?'))return;snapshot();state.visits.splice(i,1);save();render();}
+function addExpense(){
+ const date=document.getElementById('expenseDate').value||today(), category=document.getElementById('expenseCategory').value||'Витрата', amount=num(document.getElementById('expenseAmount').value);
+ if(!amount)return alert('Вкажіть суму витрати'); snapshot(); state.expenses.push({date,month:monthOf(date),category,amount}); save(); render(); toast('Витрату додано');
+}
+function deleteExpense(i){if(!confirm('Видалити витрату?'))return;snapshot();state.expenses.splice(i,1);save();render();}
+
+function monthly(){
+ const m={}; state.visits.forEach(v=>{m[v.month]??={service:0,sales:0,revenue:0,visitExp:0,businessExp:0,count:0};m[v.month].service+=v.service_price;m[v.month].sales+=v.sales;m[v.month].revenue+=v.total;m[v.month].visitExp+=v.visit_expenses;m[v.month].count++;});
+ state.expenses.forEach(e=>{m[e.month]??={service:0,sales:0,revenue:0,visitExp:0,businessExp:0,count:0};m[e.month].businessExp+=e.amount;});
+ Object.values(m).forEach(x=>x.profit=x.revenue-x.visitExp-x.businessExp); return m;
+}
+function clients(){
+ const c={}; state.visits.forEach(v=>{if(v.name==='Окремі продажі')return;c[v.name]??={name:v.name,visits:0,revenue:0,profit:0,last:v.date};c[v.name].visits++;c[v.name].revenue+=v.total;c[v.name].profit+=v.profit;c[v.name].last=c[v.name].last>v.date?c[v.name].last:v.date;});
+ return Object.values(c).sort((a,b)=>b.revenue-a.revenue);
+}
+function renderCards(){
+ const t=Object.values(monthly()).reduce((a,x)=>({service:a.service+x.service,sales:a.sales+x.sales,revenue:a.revenue+x.revenue,exp:a.exp+x.visitExp+x.businessExp,profit:a.profit+x.profit,count:a.count+x.count}),{service:0,sales:0,revenue:0,exp:0,profit:0,count:0});
+ set('kRevenue',czk(t.revenue));set('kProfit',czk(t.profit));set('kServices',czk(t.service));set('kSales',czk(t.sales));set('kExpenses',czk(t.exp));set('kClients',clients().length);set('kAvg',czk(t.count?t.revenue/t.count:0));set('kVisits',t.count);
+}
+function set(id,v){const e=document.getElementById(id); if(e) e.textContent=v;}
+function renderTables(){
+ const q=(document.getElementById('search').value||'').toLowerCase();
+ document.querySelector('#productsTable tbody').innerHTML=state.products.map((p,i)=>`<tr><td>${escapeHtml(p.name)}</td><td>${escapeHtml(p.type)}</td><td class="money">${czk(p.price)}</td><td class="money">${czk(p.cost)}</td><td><button class="danger" onclick="deleteProduct(${i})">×</button></td></tr>`).join('');
+ document.querySelector('#visitsTable tbody').innerHTML=state.visits.map((v,i)=>({v,i})).filter(({v})=>[v.date,v.name,v.service].join(' ').toLowerCase().includes(q)).map(({v,i})=>`<tr><td>${v.date}</td><td>${escapeHtml(v.name)}</td><td>${escapeHtml(v.service)}</td><td class="money">${czk(v.service_price)}</td><td class="money">${czk(v.sales)}</td><td class="money">${czk(v.total)}</td><td class="note">${v.items.map(x=>`${escapeHtml(x.name)} ${x.qty}×${czk(x.price)}`).join('<br>')}</td><td class="money">${czk(v.visit_expenses)}</td><td class="money ${v.profit<0?'negative':'positive'}">${czk(v.profit)}</td><td><button class="danger" onclick="deleteVisit(${i})">×</button></td></tr>`).join('');
+ document.querySelector('#clientsTable tbody').innerHTML=clients().map(c=>`<tr><td>${escapeHtml(c.name)}</td><td>${c.visits}</td><td>${c.last}</td><td class="money">${czk(c.revenue)}</td><td class="money ${c.profit<0?'negative':'positive'}">${czk(c.profit)}</td></tr>`).join('');
+ const now=today(); document.querySelector('#recallTable tbody').innerHTML=clients().map(c=>({...c,days:Math.max(0,Math.floor((new Date(now)-new Date(c.last))/(86400000)))})).filter(c=>c.days>=45).sort((a,b)=>b.days-a.days).map(c=>`<tr><td>${escapeHtml(c.name)}</td><td>${c.last}</td><td>${c.days}</td><td>${c.visits}</td></tr>`).join('');
+ const m=monthly(); document.querySelector('#monthlyTable tbody').innerHTML=Object.keys(m).sort().map(k=>{const x=m[k];return`<tr><td>${k}</td><td class="money">${czk(x.service)}</td><td class="money">${czk(x.sales)}</td><td class="money">${czk(x.revenue)}</td><td class="money">${czk(x.visitExp+x.businessExp)}</td><td class="money ${x.profit<0?'negative':'positive'}">${czk(x.profit)}</td><td>${x.count}</td></tr>`}).join('');
+ document.querySelector('#expensesTable tbody').innerHTML=state.expenses.map((e,i)=>`<tr><td>${e.date}</td><td>${escapeHtml(e.category)}</td><td class="money">${czk(e.amount)}</td><td><button class="danger" onclick="deleteExpense(${i})">×</button></td></tr>`).join('');
+}
+function draw(id, labels, vals, title){
+ const c=document.getElementById(id); const ctx=c.getContext('2d'); const dpr=window.devicePixelRatio||1; c.width=c.clientWidth*dpr; c.height=220*dpr; ctx.scale(dpr,dpr); const W=c.clientWidth,H=220,p=36,max=Math.max(...vals,1); ctx.clearRect(0,0,W,H); ctx.fillStyle='#152033'; ctx.font='13px Arial'; ctx.fillText(title,12,20); vals.forEach((v,i)=>{const slot=(W-p*2)/vals.length,bw=slot*.55,x=p+i*slot+8,bh=(H-p*2)*(v/max),y=H-p-bh;ctx.fillStyle='#1f4e78';ctx.fillRect(x,y,bw,bh);ctx.fillStyle='#6b7280';ctx.fillText(labels[i].slice(5),x,H-10);});
+}
+function renderCharts(){const m=monthly(), labels=Object.keys(m).sort(); draw('revenueChart',labels,labels.map(k=>m[k].revenue),'Оборот по місяцях'); draw('profitChart',labels,labels.map(k=>Math.max(m[k].profit,0)),'Прибуток по місяцях');}
+function render(){normalizeAll();renderSelects();renderDrafts();renderCards();renderTables();renderCharts();}
+function exportBackup(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='hair-crm-backup.json';a.click();URL.revokeObjectURL(url);}
+function importBackup(){const f=document.getElementById('importFile').files[0]; if(!f)return alert('Оберіть JSON backup'); const r=new FileReader(); r.onload=()=>{try{snapshot();state=JSON.parse(r.result);save();render();toast('Backup відновлено');}catch(e){alert('Не вдалося прочитати backup')}}; r.readAsText(f);}
+document.addEventListener('DOMContentLoaded',()=>{load(); document.getElementById('visitDate').value=today(); document.getElementById('expenseDate').value=today();
+ document.getElementById('addProduct').onclick=addProduct; document.getElementById('addCatalogItem').onclick=addDraftItem; document.getElementById('addMaterial').onclick=addMaterial; document.getElementById('addVisit').onclick=addVisit; document.getElementById('addExpense').onclick=addExpense; document.getElementById('undoBtn').onclick=undo; document.getElementById('exportBtn').onclick=exportBackup; document.getElementById('importBtn').onclick=importBackup; document.getElementById('search').oninput=renderTables;
+ document.getElementById('visitService').onchange=()=>{const val=document.getElementById('visitService').value.toLowerCase(); const p=state.products.find(x=>x.type==='Послуга'&&x.name.toLowerCase()===val); if(p)document.getElementById('visitServicePrice').value=p.price;};
+ render();});
