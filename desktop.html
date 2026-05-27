@@ -1,46 +1,17 @@
-<!DOCTYPE html>
-<html lang="uk"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Hair CRM Desktop v5</title><link rel="stylesheet" href="style.css"></head>
-<body>
-<header class="topbar"><div><h1>Hair Business CRM v5 · Desktop</h1><p>Dashboard · клієнти · асортимент · продажі · retention · аналітика</p></div><div class="top-actions"><button id="undoBtn" class="secondary">↶ Відмінити</button><button id="exportBtn">Експорт JSON</button></div></header>
-<main class="layout">
-<section class="cards">
-<div class="card"><span>Оборот</span><strong id="revenue">0</strong></div><div class="card"><span>Процедури</span><strong id="serviceRevenue">0</strong></div><div class="card"><span>Продажі</span><strong id="salesRevenue">0</strong></div><div class="card"><span>Матеріали</span><strong id="visitExpenses">0</strong></div><div class="card"><span>Витрати</span><strong id="expensesTotal">0</strong></div><div class="card"><span>Прибуток</span><strong id="profit">0</strong></div><div class="card"><span>Клієнтів</span><strong id="clientCount">0</strong></div><div class="card"><span>Середній чек</span><strong id="avgCheck">0</strong></div>
-</section>
-
-<section class="charts">
-<div class="panel chart-card"><canvas id="revenueChart"></canvas></div><div class="panel chart-card"><canvas id="profitChart"></canvas></div><div class="panel chart-card"><canvas id="expensePie"></canvas></div><div class="panel chart-card"><canvas id="clientsChart"></canvas></div>
-</section>
-
-<section class="panel">
-<div class="table-head"><h2>База асортименту</h2><span class="hint">Додайте товари / послуги / матеріали. База стартує порожньою.</span></div>
-<div class="grid catalog-grid"><input id="productName" placeholder="Назва"><select id="productType"><option>Товар</option><option>Послуга</option><option>Матеріал</option></select><input id="productPrice" type="number" placeholder="Ціна продажу"><input id="productCost" type="number" placeholder="Собівартість"><button id="addProduct">+ В базу</button></div>
-<div class="table-wrap"><table id="productsTable"><thead><tr><th>Назва</th><th>Тип</th><th>Ціна</th><th>Собівартість</th><th>Дія</th></tr></thead><tbody></tbody></table></div>
-</section>
-
-<section class="panel">
-<h2>Новий запис</h2>
-<div class="grid"><input id="name" list="clientsList" placeholder="Імʼя"><datalist id="clientsList"></datalist><input id="date" type="date"><input id="service" list="servicesList" placeholder="Процедура"><datalist id="servicesList"></datalist><input id="servicePrice" type="number" placeholder="Ціна процедури"><input id="sales" type="number" placeholder="Ручні продажі"><input id="expense" type="number" placeholder="Витрати" readonly></div>
-<div class="box items-box"><div class="box-head"><h3>Позиції з бази до клієнта</h3><span id="itemsTotal">0</span></div><div class="grid item-grid"><select id="catalogSelect"></select><input id="catalogQty" type="number" value="1"><button id="addCatalogItem">+ Позиція</button></div><table id="itemsTable"><thead><tr><th>Позиція</th><th>Тип</th><th>К-сть</th><th>Ціна</th><th>Сума</th><th>Дія</th></tr></thead><tbody></tbody></table></div>
-<div class="box materials-box"><div class="box-head"><h3>Матеріали по процедурі</h3><span id="materialsTotal">0</span></div><div class="grid material-grid"><input id="materialName" list="materialsList" placeholder="Матеріал"><datalist id="materialsList"></datalist><input id="materialQty" type="number" value="1"><input id="materialCost" type="number" placeholder="Собівартість"><button id="addMaterial">+ Матеріал</button></div><table id="materialsTable"><thead><tr><th>Матеріал</th><th>К-сть</th><th>Собівартість</th><th>Сума</th><th>Дія</th></tr></thead><tbody></tbody></table></div>
-<button id="addVisit">Додати клієнта / продаж</button>
-</section>
-
-<section class="panel"><h2>Нова витрата бізнесу</h2><div class="grid"><input id="expenseDate" type="date"><input id="expenseCategory" list="expenseCategoriesList" placeholder="Категорія"><datalist id="expenseCategoriesList"></datalist><input id="expenseAmount" type="number" placeholder="Сума"><button id="addExpense">Додати витрату</button></div></section>
-
-<section class="panel"><div class="table-head"><h2>Візити та продажі</h2><input id="search" placeholder="Пошук"></div><div class="table-wrap"><table id="visitsTable"><thead><tr><th>Дата</th><th>Імʼя</th><th>Процедура</th><th>Процедура</th><th>Продажі</th><th>Тотал</th><th>Позиції</th><th>Витрати запису</th><th>Прибуток</th><th>Дія</th></tr></thead><tbody></tbody></table></div></section>
-
-<section class="two-col">
-<div class="panel"><h2>Клієнтська база</h2><div class="table-wrap"><table id="clientsTable"><thead><tr><th>Клієнт</th><th>Візитів</th><th>Останній</th><th>Оборот</th><th>Прибуток</th><th>Останні послуги</th></tr></thead><tbody></tbody></table></div></div>
-<div class="panel"><h2>Кого запросити повторно</h2><div class="table-wrap"><table id="recallTable"><thead><tr><th>Клієнт</th><th>Останній візит</th><th>Днів минуло</th><th>Візитів</th><th>Оборот</th></tr></thead><tbody></tbody></table></div></div>
-</section>
-
-<section class="two-col">
-<div class="panel"><h2>Топ процедур</h2><div class="table-wrap"><table id="servicesTable"><thead><tr><th>Послуга</th><th>К-сть</th><th>Оборот</th><th>Прибуток</th></tr></thead><tbody></tbody></table></div></div>
-<div class="panel"><h2>Топ товарів</h2><div class="table-wrap"><table id="productStatsTable"><thead><tr><th>Товар</th><th>К-сть</th><th>Оборот</th><th>Маржа</th></tr></thead><tbody></tbody></table></div></div>
-</section>
-
-<section class="two-col">
-<div class="panel"><h2>Витрати бізнесу</h2><div class="table-wrap"><table id="expensesTable"><thead><tr><th>Дата</th><th>Місяць</th><th>Категорія</th><th>Сума</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
-<div class="panel"><h2>Підсумок по місяцях</h2><div class="table-wrap"><table id="monthlyTable"><thead><tr><th>Місяць</th><th>Процедури</th><th>Продажі</th><th>Оборот</th><th>Матеріали</th><th>Витрати</th><th>Прибуток</th><th>Записів</th></tr></thead><tbody></tbody></table></div></div>
-</section>
-</main><script src="data.js"></script><script src="app.js"></script></body></html>
+<!DOCTYPE html><html lang='uk'><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Hair CRM"><meta name="theme-color" content="#1f4e78"><link rel="manifest" href="manifest.json"><link rel="stylesheet" href="style.css"><title>Hair CRM v6</title></head><body>
+<header class="appbar"><h1>Hair CRM · Desktop</h1><p>Desktop dashboard</p><div class="top-actions"><button id="undoBtn" class="secondary">↶</button><button id="exportBtn">JSON</button></div></header>
+<nav class="nav"><a href="#top">Головна</a><a href="#new">Запис</a><a href="#catalog">База</a><a href="#clients">Клієнти</a><a href="#stats">Стата</a></nav>
+<main class="layout" id="top"><div id="status" class="status"></div>
+<section class="cards"><div class="card"><span>Оборот</span><strong id="revenue"></strong></div><div class="card"><span>Прибуток</span><strong id="profit"></strong></div><div class="card"><span>Продажі</span><strong id="salesRevenue"></strong></div><div class="card"><span>Сер. чек</span><strong id="avgCheck"></strong></div><div class="card"><span>Клієнтів</span><strong id="clientCount"></strong></div><div class="card"><span>Витрати</span><strong id="expensesTotal"></strong></div><div class="card"><span>Процедури</span><strong id="serviceRevenue"></strong></div><div class="card"><span>Матеріали</span><strong id="visitExpenses"></strong></div></section>
+<section class="panel" id="new"><h2>Швидко додати запис</h2><div class="grid"><input id="name" list="clientsList" placeholder="Імʼя"><datalist id="clientsList"></datalist><input id="date" type="date"><input id="service" list="servicesList" placeholder="Процедура"><datalist id="servicesList"></datalist><input id="servicePrice" type="number" placeholder="Ціна процедури"><input id="sales" type="number" placeholder="Ручні продажі"><input id="expense" type="number" placeholder="Витрати" readonly></div>
+<div class="box items-box"><div class="box-head"><h3>+ товар/послуга з бази</h3><span id="itemsTotal"></span></div><div class="grid"><select id="catalogSelect"></select><input id="catalogQty" type="number" value="1"><button id="addCatalogItem">+ Додати позицію</button></div><div class="table-wrap"><table id="itemsTable"><thead><tr><th>Позиція</th><th>Тип</th><th>К-сть</th><th>Ціна</th><th>Сума</th><th></th></tr></thead><tbody></tbody></table></div></div>
+<div class="box materials-box"><div class="box-head"><h3>Матеріали</h3><span id="materialsTotal"></span></div><div class="grid"><input id="materialName" list="materialsList" placeholder="Матеріал"><datalist id="materialsList"></datalist><input id="materialQty" type="number" value="1"><input id="materialCost" type="number" placeholder="Собівартість"><button id="addMaterial">+ Матеріал</button></div><div class="table-wrap"><table id="materialsTable"><thead><tr><th>Матеріал</th><th>К-сть</th><th>Собівартість</th><th>Сума</th><th></th></tr></thead><tbody></tbody></table></div></div><button id="addVisit" class="full">Додати запис</button></section>
+<section class="panel" id="catalog"><h2>База асортименту</h2><div class="grid"><input id="productName" placeholder="Назва"><select id="productType"><option>Товар</option><option>Послуга</option><option>Матеріал</option></select><input id="productPrice" type="number" placeholder="Ціна продажу"><input id="productCost" type="number" placeholder="Собівартість"><button id="addProduct">+ В базу</button></div><div class="table-wrap"><table id="productsTable"><thead><tr><th>Назва</th><th>Тип</th><th>Ціна</th><th>Собівартість</th><th>Дія</th></tr></thead><tbody></tbody></table></div></section>
+<section class="panel"><h2>Витрата бізнесу</h2><div class="grid"><input id="expenseDate" type="date"><input id="expenseCategory" list="expenseCategoriesList" placeholder="Категорія"><datalist id="expenseCategoriesList"></datalist><input id="expenseAmount" type="number" placeholder="Сума"><button id="addExpense">Додати витрату</button></div></section>
+<section class="charts" id="stats"><div class="panel chart-card"><canvas id="revenueChart"></canvas></div><div class="panel chart-card"><canvas id="profitChart"></canvas></div><div class="panel chart-card"><canvas id="clientsChart"></canvas></div></section>
+<section class="panel"><div class="table-head"><h2>Записи</h2><input id="search" placeholder="Пошук"></div><div class="table-wrap"><table id="visitsTable"><thead><tr><th>Дата</th><th>Імʼя</th><th>Процедура</th><th>Проц.</th><th>Продажі</th><th>Тотал</th><th>Позиції</th><th>Витр.</th><th>Приб.</th><th></th></tr></thead><tbody></tbody></table></div></section>
+<section class="panel" id="clients"><h2>Клієнтська база</h2><div class="table-wrap"><table id="clientsTable"><thead><tr><th>Клієнт</th><th>Візитів</th><th>Останній</th><th>Оборот</th><th>Прибуток</th></tr></thead><tbody></tbody></table></div></section>
+<section class="panel"><h2>Кого запросити повторно</h2><div class="table-wrap"><table id="recallTable"><thead><tr><th>Клієнт</th><th>Останній</th><th>Днів</th><th>Візитів</th><th>Оборот</th></tr></thead><tbody></tbody></table></div></section>
+<section class="panel"><h2>Підсумок по місяцях</h2><div class="table-wrap"><table id="monthlyTable"><thead><tr><th>Місяць</th><th>Проц.</th><th>Продажі</th><th>Оборот</th><th>Мат.</th><th>Витр.</th><th>Приб.</th><th>Зап.</th></tr></thead><tbody></tbody></table></div></section>
+<section class="panel"><h2>Витрати бізнесу</h2><div class="table-wrap"><table id="expensesTable"><thead><tr><th>Дата</th><th>Місяць</th><th>Категорія</th><th>Сума</th><th></th></tr></thead><tbody></tbody></table></div></section></main><script src="data.js"></script><script src="app.js"></script>
+</body></html>
