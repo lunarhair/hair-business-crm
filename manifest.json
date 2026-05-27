@@ -1,0 +1,9 @@
+{
+  "name": "Hair Business CRM",
+  "short_name": "Hair CRM",
+  "start_url": "mobile.html",
+  "display": "standalone",
+  "background_color": "#f4f7fb",
+  "theme_color": "#1f4e78",
+  "icons": []
+}

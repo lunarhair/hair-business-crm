@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="uk"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"><title>Hair CRM Mobile v5</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="topbar"><div><h1>Hair CRM · iPhone</h1><p>Швидкий запис з телефону</p></div><div class="top-actions"><button id="undoBtn" class="secondary">↶</button><button id="exportBtn">JSON</button></div></header>
+<main class="layout">
+<section class="cards">
+<div class="card"><span>Оборот</span><strong id="revenue">0</strong></div><div class="card"><span>Прибуток</span><strong id="profit">0</strong></div><div class="card"><span>Продажі</span><strong id="salesRevenue">0</strong></div><div class="card"><span>Сер. чек</span><strong id="avgCheck">0</strong></div><div class="card"><span>Клієнтів</span><strong id="clientCount">0</strong></div><div class="card"><span>Витрати</span><strong id="expensesTotal">0</strong></div>
+</section>
+
+<section class="panel"><h2>Швидко додати запис</h2>
+<div class="grid"><input id="name" list="clientsList" placeholder="Імʼя"><datalist id="clientsList"></datalist><input id="date" type="date"><input id="service" list="servicesList" placeholder="Процедура"><datalist id="servicesList"></datalist><input id="servicePrice" type="number" placeholder="Ціна процедури"><input id="sales" type="number" placeholder="Ручні продажі"><input id="expense" type="number" placeholder="Витрати" readonly></div>
+<div class="box items-box"><div class="box-head"><h3>+ товар/послуга з бази</h3><span id="itemsTotal">0</span></div><div class="grid item-grid"><select id="catalogSelect"></select><input id="catalogQty" type="number" value="1"><button id="addCatalogItem">+</button></div><table id="itemsTable"><thead><tr><th>Позиція</th><th>Тип</th><th>К-сть</th><th>Ціна</th><th>Сума</th><th></th></tr></thead><tbody></tbody></table></div>
+<div class="box materials-box"><div class="box-head"><h3>Матеріали</h3><span id="materialsTotal">0</span></div><div class="grid material-grid"><input id="materialName" list="materialsList" placeholder="Матеріал"><datalist id="materialsList"></datalist><input id="materialQty" type="number" value="1"><input id="materialCost" type="number" placeholder="Собівартість"><button id="addMaterial">+</button></div><table id="materialsTable"><thead><tr><th>Матеріал</th><th>К-сть</th><th>Собівартість</th><th>Сума</th><th></th></tr></thead><tbody></tbody></table></div>
+<button id="addVisit">Додати запис</button>
+</section>
+
+<section class="panel"><h2>База асортименту</h2><div class="grid"><input id="productName" placeholder="Назва"><select id="productType"><option>Товар</option><option>Послуга</option><option>Матеріал</option></select><input id="productPrice" type="number" placeholder="Ціна"><input id="productCost" type="number" placeholder="Собівартість"><button id="addProduct">+ В базу</button></div><div class="table-wrap"><table id="productsTable"><thead><tr><th>Назва</th><th>Тип</th><th>Ціна</th><th>Собівартість</th><th></th></tr></thead><tbody></tbody></table></div></section>
+
+<section class="panel"><h2>Витрата бізнесу</h2><div class="grid"><input id="expenseDate" type="date"><input id="expenseCategory" list="expenseCategoriesList" placeholder="Категорія"><datalist id="expenseCategoriesList"></datalist><input id="expenseAmount" type="number" placeholder="Сума"><button id="addExpense">Додати</button></div></section>
+
+<section class="charts"><div class="panel chart-card"><canvas id="revenueChart"></canvas></div><div class="panel chart-card"><canvas id="clientsChart"></canvas></div></section>
+
+<section class="panel"><div class="table-head"><h2>Записи</h2><input id="search" placeholder="Пошук"></div><div class="table-wrap"><table id="visitsTable"><thead><tr><th>Дата</th><th>Імʼя</th><th>Процедура</th><th>Процедура</th><th>Продажі</th><th>Тотал</th><th>Позиції</th><th>Витрати</th><th>Прибуток</th><th></th></tr></thead><tbody></tbody></table></div></section>
+
+<section class="panel"><h2>Кого запросити повторно</h2><div class="table-wrap"><table id="recallTable"><thead><tr><th>Клієнт</th><th>Останній</th><th>Днів</th><th>Візитів</th><th>Оборот</th></tr></thead><tbody></tbody></table></div></section>
+
+<section style="display:none">
+<table id="expensesTable"><tbody></tbody></table><table id="monthlyTable"><tbody></tbody></table><table id="clientsTable"><tbody></tbody></table><table id="servicesTable"><tbody></tbody></table><table id="productStatsTable"><tbody></tbody></table>
+<canvas id="profitChart"></canvas><canvas id="expensePie"></canvas>
+<span id="serviceRevenue"></span><span id="visitExpenses"></span>
+</section>
+</main><script src="data.js"></script><script src="app.js"></script></body></html>
